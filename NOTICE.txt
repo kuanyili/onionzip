@@ -1,0 +1,5 @@
+Onionzip
+Copyright 2016 Kuan-Yi Li
+
+This product includes software developed by
+Kuan-Yi Li (http://abysm.org/).
