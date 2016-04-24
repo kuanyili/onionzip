@@ -67,23 +67,7 @@ public class App {
         if (cmd.hasOption("charset")) {
             charset = cmd.getOptionValue("charset");
         } else {
-            // Detect filename charset
-            UniversalDetector filenameCharsetDetector = new UniversalDetector(null);
-            ZipFile zipFile = new ZipFile(zipFilename);
-            try {
-                for (Enumeration<ZipArchiveEntry> e = zipFile.getEntries(); e.hasMoreElements(); ) {
-                    ZipArchiveEntry entry = e.nextElement();
-                    if (!entry.getGeneralPurposeBit().usesUTF8ForNames()) {
-                        byte[] filename = entry.getRawName();
-                        filenameCharsetDetector.handleData(filename, 0, filename.length);
-                    }
-                }
-            } finally {
-                ZipFile.closeQuietly(zipFile);
-            }
-            filenameCharsetDetector.dataEnd();
-            charset = filenameCharsetDetector.getDetectedCharset();
-            filenameCharsetDetector.reset();
+            charset = detectZipFileCharset(zipFilename);
             System.err.format("Detected charset: %s\n", charset);
         }
 
@@ -92,6 +76,24 @@ public class App {
         } else {
             extractZipFile(zipFilename, charset);
         }
+    }
+
+    private static String detectZipFileCharset(String name) throws IOException {
+        UniversalDetector filenameCharsetDetector = new UniversalDetector(null);
+        ZipFile zipFile = new ZipFile(name);
+        try {
+            for (Enumeration<ZipArchiveEntry> e = zipFile.getEntries(); e.hasMoreElements(); ) {
+                ZipArchiveEntry entry = e.nextElement();
+                if (!entry.getGeneralPurposeBit().usesUTF8ForNames()) {
+                    byte[] filename = entry.getRawName();
+                    filenameCharsetDetector.handleData(filename, 0, filename.length);
+                }
+            }
+        } finally {
+            ZipFile.closeQuietly(zipFile);
+        }
+        filenameCharsetDetector.dataEnd();
+        return filenameCharsetDetector.getDetectedCharset();
     }
 
     private static void listZipFile(String name, String encoding) throws IOException {
