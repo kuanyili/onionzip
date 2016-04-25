@@ -38,43 +38,48 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.mozilla.universalchardet.UniversalDetector;
 
 public class App {
-    public static void main(String[] args) throws ParseException, IOException {
+    public static void main(String[] args) throws IOException {
+        CommandLineParser parser = new DefaultParser();
+
         Options options = new Options();
         options.addOption("c", "charset", true, "charset for filenames in the archive (detected if not given)");
         options.addOption("h", "help", false, "print this message");
         options.addOption("l", "list", false, "list archive files");
         options.addOption("s", "supported-charsets", false, "list supported charsets");
 
-        CommandLineParser parser = new DefaultParser();
-        CommandLine cmd = parser.parse(options, args);
+        try {
+            CommandLine cmd = parser.parse(options, args);
 
-        if (cmd.hasOption("supported-charsets")) {
-            for (String charsetName : Charset.availableCharsets().keySet()) {
-                System.out.println(charsetName);
+            if (cmd.hasOption("supported-charsets")) {
+                for (String charsetName : Charset.availableCharsets().keySet()) {
+                    System.out.println(charsetName);
+                }
+                return;
             }
-            return;
-        }
 
-        if (cmd.hasOption("help") || cmd.getArgs().length != 1) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("onionzip [OPTIONS] ZIP_FILE", options);
-            return;
-        }
+            if (cmd.hasOption("help") || cmd.getArgs().length != 1) {
+                HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("onionzip [OPTIONS] ZIP_FILE", options);
+                return;
+            }
 
-        String zipFilename = cmd.getArgs()[0];
+            String zipFilename = cmd.getArgs()[0];
 
-        String charset;
-        if (cmd.hasOption("charset")) {
-            charset = cmd.getOptionValue("charset");
-        } else {
-            charset = detectZipFileCharset(zipFilename);
-            System.err.format("Detected charset: %s\n", charset);
-        }
+            String charset;
+            if (cmd.hasOption("charset")) {
+                charset = cmd.getOptionValue("charset");
+            } else {
+                charset = detectZipFileCharset(zipFilename);
+                System.err.format("Detected charset: %s\n", charset);
+            }
 
-        if (cmd.hasOption("list")) {
-            listZipFile(zipFilename, charset);
-        } else {
-            extractZipFile(zipFilename, charset);
+            if (cmd.hasOption("list")) {
+                listZipFile(zipFilename, charset);
+            } else {
+                extractZipFile(zipFilename, charset);
+            }
+        } catch (ParseException e) {
+            System.err.println(e.getMessage());
         }
     }
 
