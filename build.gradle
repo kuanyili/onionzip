@@ -20,7 +20,7 @@ apply plugin: 'idea'
 apply plugin: 'eclipse'
 
 group = 'org.abysm'
-version = '1.0'
+version = 'rolling'
 
 sourceCompatibility = 1.7
 
