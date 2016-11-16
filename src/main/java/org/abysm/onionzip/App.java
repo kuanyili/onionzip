@@ -16,15 +16,8 @@
 
 package org.abysm.onionzip;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
-import java.util.Enumeration;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -32,10 +25,6 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.commons.compress.utils.IOUtils;
-import org.mozilla.universalchardet.UniversalDetector;
 
 public class App {
     public static void main(String[] args) throws IOException {
@@ -64,100 +53,22 @@ public class App {
             }
 
             String zipFilename = cmd.getArgs()[0];
+            ZipFileExtractHelper zipFileHandler = new ZipFileExtractHelper(zipFilename);
 
-            String charset;
             if (cmd.hasOption("charset")) {
-                charset = cmd.getOptionValue("charset");
+                zipFileHandler.setEncoding(cmd.getOptionValue("charset"));
             } else {
-                charset = detectZipFileCharset(zipFilename);
-                System.err.format("Detected charset: %s\n", charset);
+                zipFileHandler.setEncodingAuto();
+                System.err.format("Detected charset: %s\n", zipFileHandler.getEncoding());
             }
 
             if (cmd.hasOption("list")) {
-                listZipFile(zipFilename, charset);
+                zipFileHandler.listZipFile();
             } else {
-                extractZipFile(zipFilename, charset);
+                zipFileHandler.extractZipFile();
             }
         } catch (ParseException e) {
             System.err.println(e.getMessage());
-        }
-    }
-
-    private static String detectZipFileCharset(String name) throws IOException {
-        UniversalDetector filenameCharsetDetector = new UniversalDetector(null);
-        ZipFile zipFile = new ZipFile(name);
-        try {
-            for (Enumeration<ZipArchiveEntry> e = zipFile.getEntries(); e.hasMoreElements(); ) {
-                ZipArchiveEntry entry = e.nextElement();
-                if (!entry.getGeneralPurposeBit().usesUTF8ForNames()) {
-                    byte[] filename = entry.getRawName();
-                    filenameCharsetDetector.handleData(filename, 0, filename.length);
-                }
-            }
-        } finally {
-            ZipFile.closeQuietly(zipFile);
-        }
-        filenameCharsetDetector.dataEnd();
-        return filenameCharsetDetector.getDetectedCharset();
-    }
-
-    private static void listZipFile(String name, String encoding) throws IOException {
-        ZipFile zipFile = new ZipFile(name, encoding);
-        try {
-            System.out.println("Length\tDatetime\tName\tEFS\tUnix Mode");
-            for (Enumeration<ZipArchiveEntry> e = zipFile.getEntries(); e.hasMoreElements(); ) {
-                ZipArchiveEntry entry = e.nextElement();
-                System.out.format(
-                        "%d\t%s\t%s\t%b\t%o\n",
-                        entry.getSize(),
-                        entry.getLastModifiedDate().toString(),
-                        entry.getName(),
-                        entry.getGeneralPurposeBit().usesUTF8ForNames(),
-                        entry.getUnixMode()
-                );
-            }
-        } finally {
-            ZipFile.closeQuietly(zipFile);
-        }
-    }
-
-    private static void extractZipFile(String name, String encoding) throws IOException {
-        ZipFile zipFile = new ZipFile(name, encoding);
-        try {
-            for (Enumeration<ZipArchiveEntry> e = zipFile.getEntries(); e.hasMoreElements(); ) {
-                ZipArchiveEntry entry = e.nextElement();
-                System.out.println(entry.getName());
-                if (entry.isDirectory()) {
-                    Path directory = Paths.get(entry.getName());
-                    Files.createDirectories(directory);
-                } else if (entry.isUnixSymlink()) {
-                    Path symlink = Paths.get(entry.getName());
-                    Path parentDirectory = symlink.getParent();
-                    Path target = Paths.get(zipFile.getUnixSymlink(entry));
-                    if (parentDirectory != null) {
-                        Files.createDirectories(parentDirectory);
-                    }
-                    Files.createSymbolicLink(symlink, target);
-                } else {
-                    Path file = Paths.get(entry.getName());
-                    Path parentDirectory = file.getParent();
-                    if (parentDirectory != null) {
-                        Files.createDirectories(parentDirectory);
-                    }
-                    InputStream contentInputStream = zipFile.getInputStream(entry);
-                    FileOutputStream extractedFileOutputStream = new FileOutputStream(entry.getName());
-                    try {
-                        IOUtils.copy(contentInputStream, extractedFileOutputStream);
-                    } finally {
-                        IOUtils.closeQuietly(contentInputStream);
-                        IOUtils.closeQuietly(extractedFileOutputStream);
-                    }
-                    FileTime fileTime = FileTime.fromMillis(entry.getLastModifiedDate().getTime());
-                    Files.setLastModifiedTime(file, fileTime);
-                }
-            }
-        } finally {
-            ZipFile.closeQuietly(zipFile);
         }
     }
 }
