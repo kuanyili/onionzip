@@ -64,7 +64,7 @@ class ZipFileExtractHelper {
         this.encoding = filenameCharsetDetector.getDetectedCharset();
     }
 
-    void listZipFile() throws IOException {
+    void list() throws IOException {
         ZipFile zipFile = new ZipFile(zipFilename, encoding);
         try {
             System.out.println("Length\tDatetime\tName\tEFS\tUnix Mode");
@@ -84,7 +84,7 @@ class ZipFileExtractHelper {
         }
     }
 
-    void extractZipFile() throws IOException {
+    void extract() throws IOException {
         ZipFile zipFile = new ZipFile(zipFilename, encoding);
         try {
             for (Enumeration<ZipArchiveEntry> e = zipFile.getEntries(); e.hasMoreElements(); ) {
