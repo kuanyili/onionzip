@@ -46,7 +46,7 @@ class ZipFileExtractHelper {
         this.encoding = encoding;
     }
 
-    void setEncodingAuto() throws IOException {
+    void setEncodingByDetection() throws IOException {
         UniversalDetector filenameCharsetDetector = new UniversalDetector(null);
         ZipFile zipFile = new ZipFile(zipFilename);
         try {

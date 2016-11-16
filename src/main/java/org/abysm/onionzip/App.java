@@ -58,7 +58,7 @@ public class App {
             if (cmd.hasOption("charset")) {
                 zipFileHandler.setEncoding(cmd.getOptionValue("charset"));
             } else {
-                zipFileHandler.setEncodingAuto();
+                zipFileHandler.setEncodingByDetection();
                 System.err.format("Detected charset: %s\n", zipFileHandler.getEncoding());
             }
 
