@@ -28,10 +28,10 @@ List and extract ZIP archive with arbitrary filename encoding. No more mojibake 
 
 ```
 usage: onionzip [OPTIONS] ZIP_FILE
- -c,--charset <arg>        charset for filenames in the archive (detected
+ -c,--charset <arg>        charset of filenames in the archive (detected
                            if not given)
  -h,--help                 print this message
- -l,--list                 list archive files
+ -l,--list                 list contents of archive
  -s,--supported-charsets   list supported charsets
 ```
 

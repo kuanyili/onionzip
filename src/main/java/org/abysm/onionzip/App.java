@@ -31,9 +31,9 @@ public class App {
         CommandLineParser parser = new DefaultParser();
 
         Options options = new Options();
-        options.addOption("c", "charset", true, "charset for filenames in the archive (detected if not given)");
+        options.addOption("c", "charset", true, "charset of filenames in the archive (detected if not given)");
         options.addOption("h", "help", false, "print this message");
-        options.addOption("l", "list", false, "list archive files");
+        options.addOption("l", "list", false, "list contents of archive");
         options.addOption("s", "supported-charsets", false, "list supported charsets");
 
         try {
