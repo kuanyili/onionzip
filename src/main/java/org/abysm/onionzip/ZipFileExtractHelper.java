@@ -50,8 +50,9 @@ class ZipFileExtractHelper {
         UniversalDetector filenameCharsetDetector = new UniversalDetector(null);
         ZipFile zipFile = new ZipFile(zipFilename);
         try {
-            for (Enumeration<ZipArchiveEntry> e = zipFile.getEntries(); e.hasMoreElements(); ) {
-                ZipArchiveEntry entry = e.nextElement();
+            for (Enumeration<ZipArchiveEntry> zipArchiveEntryEnumeration = zipFile.getEntries();
+                 zipArchiveEntryEnumeration.hasMoreElements(); ) {
+                ZipArchiveEntry entry = zipArchiveEntryEnumeration.nextElement();
                 if (!entry.getGeneralPurposeBit().usesUTF8ForNames()) {
                     byte[] filename = entry.getRawName();
                     filenameCharsetDetector.handleData(filename, 0, filename.length);
@@ -64,12 +65,13 @@ class ZipFileExtractHelper {
         this.encoding = filenameCharsetDetector.getDetectedCharset();
     }
 
-    void list() throws IOException {
+    void listZipArchiveEntries() throws IOException {
         ZipFile zipFile = new ZipFile(zipFilename, encoding);
         try {
             System.out.println("Length\tDatetime\tName\tEFS\tUnix Mode");
-            for (Enumeration<ZipArchiveEntry> e = zipFile.getEntries(); e.hasMoreElements(); ) {
-                ZipArchiveEntry entry = e.nextElement();
+            for (Enumeration<ZipArchiveEntry> zipArchiveEntryEnumeration = zipFile.getEntries();
+                 zipArchiveEntryEnumeration.hasMoreElements(); ) {
+                ZipArchiveEntry entry = zipArchiveEntryEnumeration.nextElement();
                 System.out.format(
                         "%d\t%s\t%s\t%b\t%o\n",
                         entry.getSize(),
@@ -84,11 +86,12 @@ class ZipFileExtractHelper {
         }
     }
 
-    void extract() throws IOException {
+    void extractZipArchiveEntries() throws IOException {
         ZipFile zipFile = new ZipFile(zipFilename, encoding);
         try {
-            for (Enumeration<ZipArchiveEntry> e = zipFile.getEntries(); e.hasMoreElements(); ) {
-                ZipArchiveEntry entry = e.nextElement();
+            for (Enumeration<ZipArchiveEntry> zipArchiveEntryEnumeration = zipFile.getEntries();
+                 zipArchiveEntryEnumeration.hasMoreElements(); ) {
+                ZipArchiveEntry entry = zipArchiveEntryEnumeration.nextElement();
                 System.out.println(entry.getName());
                 if (entry.isDirectory()) {
                     Path directory = Paths.get(entry.getName());

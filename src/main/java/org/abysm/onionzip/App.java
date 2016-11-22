@@ -63,9 +63,9 @@ public class App {
             }
 
             if (cmd.hasOption("list")) {
-                zipFileHandler.list();
+                zipFileHandler.listZipArchiveEntries();
             } else {
-                zipFileHandler.extract();
+                zipFileHandler.extractZipArchiveEntries();
             }
         } catch (ParseException e) {
             System.err.println(e.getMessage());
